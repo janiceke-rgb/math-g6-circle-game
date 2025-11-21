@@ -17,6 +17,8 @@
             --blue-text: #2563eb; /* Blue 600 */
         }
 
+        * { box-sizing: border-box; }
+
         body {
             margin: 0;
             padding: 0;
@@ -26,18 +28,20 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            height: 100vh;
+            height: 100vh; /* Fallback */
+            height: 100dvh; /* Dynamic Viewport Height for mobile */
         }
 
         /* 導航列 */
         header {
             background-color: white;
-            padding: 8px;
+            padding: 8px 10px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            z-index: 10;
+            z-index: 20;
             display: flex;
             flex-direction: column;
             gap: 5px;
+            flex-shrink: 0;
         }
 
         .header-top {
@@ -55,11 +59,13 @@
 
         .nav-group {
             display: flex;
-            gap: 5px;
+            gap: 8px;
             overflow-x: auto;
             padding-bottom: 2px;
             -webkit-overflow-scrolling: touch;
+            scrollbar-width: none; /* Firefox */
         }
+        .nav-group::-webkit-scrollbar { display: none; } /* Chrome/Safari */
 
         .nav-btn {
             background: #e0f2fe;
@@ -86,80 +92,38 @@
             color: white;
         }
 
-        /* 畫布與容器 */
-        #canvas-container {
+        /* 內容區域容器 (Canvas + Panels) */
+        #main-container {
             flex: 1;
             position: relative;
             width: 100%;
-            height: 100%;
+            overflow: hidden;
             background-color: #ffffff;
-            touch-action: none;
         }
 
         canvas {
             display: block;
             width: 100%;
             height: 100%;
+            touch-action: none;
         }
 
-        /* 通用面板樣式 */
-        .control-panel {
+        /* 頂部概念重點面板 (新增) */
+        .top-info-panel {
             position: absolute;
-            bottom: 10px;
+            top: 10px;
             left: 50%;
             transform: translateX(-50%);
-            background-color: rgba(255, 255, 255, 0.98);
-            padding: 15px;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
             width: 95%;
             max-width: 600px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            transition: opacity 0.3s ease;
-            border: 1px solid #e2e8f0;
-            max-height: 85vh;
-            overflow-y: auto;
-        }
-
-        /* --- 練習模式相關樣式 --- */
-
-        .topic-menu {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .topic-card {
-            background: white;
-            border: 2px solid #cbd5e1;
-            border-radius: 10px;
-            padding: 15px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .topic-card:hover {
-            border-color: var(--primary-color);
-            background-color: #f0f9ff;
-            transform: translateY(-2px);
-        }
-        
-        .topic-card h3 { margin: 0 0 5px 0; color: var(--primary-dark); font-size: 1rem;}
-        .topic-card p { margin: 0; font-size: 0.8rem; color: #64748b; }
-
-        .concept-header {
+            background-color: rgba(255, 255, 255, 0.95);
             border: 2px solid #94a3b8;
-            background-color: #f1f5f9;
+            border-radius: 10px;
             padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 5px;
-            position: relative;
+            z-index: 10;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        
+
         .concept-tag {
             position: absolute;
             top: -10px;
@@ -174,21 +138,47 @@
         }
 
         .concept-content {
-            margin-top: 8px;
+            margin-top: 5px;
             font-size: 1rem;
-            line-height: 1.5;
+            line-height: 1.4;
             color: #333;
+            text-align: center;
         }
 
+        /* 底部控制面板 */
+        .control-panel {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255, 255, 255, 0.98);
+            padding: 12px 15px;
+            border-radius: 16px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+            width: 95%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: opacity 0.3s ease;
+            border: 1px solid #e2e8f0;
+            z-index: 10;
+            max-height: 50vh; /* 避免蓋住太多 */
+            overflow-y: auto;
+        }
+
+        /* 通用文字樣式 */
         .text-green { color: var(--green-text); font-weight: bold; }
         .text-blue { color: var(--blue-text); font-weight: bold; }
-        .formula-large { font-size: 1.1rem; font-weight: bold; margin: 5px 0; }
+        .text-accent { color: var(--accent-color); font-weight: bold; }
+        .formula-large { font-size: 1.1rem; font-weight: bold; margin: 5px 0; font-family: 'Courier New', monospace; }
 
+        /* 練習題相關 */
         .quiz-area {
             background-color: white;
-            border: 1px solid #cbd5e1;
-            padding: 10px;
-            border-radius: 8px;
+            /* border: 1px solid #cbd5e1; */
+            /* padding: 10px; */
+            /* border-radius: 8px; */
         }
 
         .question-text {
@@ -267,13 +257,14 @@
             color: #92400e;
         }
 
-        .tts-btn { background: none; border: none; cursor: pointer; font-size: 1.2rem; }
+        .tts-btn { background: none; border: 1px solid #ccc; border-radius:50%; width:30px; height:30px; cursor: pointer; font-size: 1rem; display:flex; align-items:center; justify-content:center;}
 
         .controls-row {
             display: flex;
             justify-content: center;
+            align-items: center;
             gap: 10px;
-            margin-top: 10px;
+            flex-wrap: wrap;
         }
 
         button.action-btn {
@@ -294,22 +285,34 @@
             background-color: var(--success-color);
             color: white;
             border: none;
-            padding: 5px 10px;
+            padding: 4px 12px;
             border-radius: 15px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             cursor: pointer;
+            font-weight: bold;
         }
+
+        /* 練習中心選單 */
+        .topic-menu {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .topic-card {
+            background: white;
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .topic-card:hover { border-color: var(--primary-color); background-color: #f0f9ff; transform: translateY(-2px); }
+        .topic-card h3 { margin: 0 0 5px 0; color: var(--primary-dark); font-size: 1rem;}
+        .topic-card p { margin: 0; font-size: 0.8rem; color: #64748b; }
 
         .hidden { display: none !important; }
-
-        .simple-panel-row {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-        input[type="range"] { width: 140px; accent-color: var(--primary-color); }
+        input[type="range"] { width: 120px; accent-color: var(--primary-color); height: 24px; }
     </style>
 </head>
 <body>
@@ -328,67 +331,98 @@
     </div>
 </header>
 
-<div id="canvas-container">
+<div id="main-container">
     <canvas id="mainCanvas"></canvas>
     
-    <!-- Panel 1: 圓周率 -->
+    <!-- === Activity 1: 圓周率 === -->
+    <!-- 頂部重點 -->
+    <div id="info-1" class="top-info-panel">
+        <div class="concept-tag">基本概念</div>
+        <div class="concept-content">
+            <div class="formula-large">圓周長 ÷ 直徑 $\approx$ 3.14</div>
+            <div style="font-size:0.9rem; color:#666;">不管圓是大是小，圓周長大約都是直徑的 3 倍多一點。</div>
+        </div>
+    </div>
+    <!-- 底部控制 -->
     <div id="panel-1" class="control-panel">
-        <div style="text-align:center; font-weight:bold; display:flex; justify-content:center; align-items:center;">
-            1. 認識圓周率
+        <div style="text-align:center; font-weight:bold; display:flex; justify-content:center; align-items:center; margin-bottom:5px;">
+            動手做：滾動圓形
             <button class="practice-link-btn" onclick="app.act5.startSpecificTopic(0)">前往練習</button>
         </div>
-        <div class="simple-panel-row">
+        <div class="controls-row">
             <label>直徑: <span id="p1-d-val">10</span></label>
             <input type="range" id="p1-slider" min="5" max="15" value="10">
             <button class="action-btn" onclick="app.act1.roll()">滾動</button>
-            <button class="action-btn" style="background:#94a3b8;" onclick="app.act1.reset()">重置</button>
+            <button class="action-btn" style="background:#94a3b8; box-shadow:0 3px 0 #64748b;" onclick="app.act1.reset()">重置</button>
         </div>
-        <div id="p1-res" class="hidden" style="text-align:center; margin-top:5px; font-weight:bold; color:var(--accent-color);">圓周率 $\approx$ 3.14</div>
+        <div id="p1-res" class="hidden" style="text-align:center; margin-top:5px; font-weight:bold; color:var(--accent-color);">測量結果：長度約 31.4 (直徑的 3.14 倍)</div>
     </div>
 
-    <!-- Panel 2: 圓周長 -->
+    <!-- === Activity 2: 圓周長 === -->
+    <div id="info-2" class="top-info-panel hidden">
+        <div class="concept-tag">圓周長公式</div>
+        <div class="concept-content">
+            <div class="formula-large">圓周長 = <span class="text-green">直徑</span> × 3.14</div>
+            <div class="formula-large">圓周長 = <span class="text-green">半徑 × 2</span> × 3.14</div>
+        </div>
+    </div>
     <div id="panel-2" class="control-panel hidden">
-        <div style="text-align:center; font-weight:bold; display:flex; justify-content:center; align-items:center;">
-            2. 圓周長公式
+        <div style="text-align:center; font-weight:bold; display:flex; justify-content:center; align-items:center; margin-bottom:5px;">
+            調整半徑觀察長度
             <button class="practice-link-btn" onclick="app.act5.startSpecificTopic(1)">前往練習</button>
         </div>
-        <div class="simple-panel-row">
-            <label>半徑: <span id="p2-r-val">10</span></label>
+        <div class="controls-row">
+            <label>半徑(r): <span id="p2-r-val">10</span></label>
             <input type="range" id="p2-slider" min="5" max="20" value="10" step="5">
         </div>
-        <div id="p2-formula" style="text-align:center; font-family:monospace; margin-top:5px;">...</div>
+        <div id="p2-formula" style="text-align:center; font-family:monospace; margin-top:5px; font-size:1.1rem; font-weight:bold; color:#334155;">...</div>
     </div>
 
-    <!-- Panel 3: 弧長 -->
+    <!-- === Activity 3: 弧長 === -->
+    <div id="info-3" class="top-info-panel hidden">
+        <div class="concept-tag">扇形弧長</div>
+        <div class="concept-content">
+            <div class="formula-large">弧長 = 圓周長 × 幾分之幾</div>
+            <div style="font-size:0.9rem;">先算出完整的圓周長 (直徑×3.14)，再乘上比例。</div>
+        </div>
+    </div>
     <div id="panel-3" class="control-panel hidden">
-        <div style="text-align:center; font-weight:bold; display:flex; justify-content:center; align-items:center;">
-            3. 扇形弧長
+        <div style="text-align:center; font-weight:bold; display:flex; justify-content:center; align-items:center; margin-bottom:5px;">
+            調整扇形比例
             <button class="practice-link-btn" onclick="app.act5.startSpecificTopic(2)">前往練習</button>
         </div>
-        <div class="simple-panel-row">
+        <div class="controls-row">
             <label>比例: <span id="p3-frac-val">1/4</span></label>
             <input type="range" id="p3-slider" min="1" max="3" value="1">
         </div>
-        <div id="p3-formula" style="text-align:center; font-family:monospace; margin-top:5px;">...</div>
+        <div id="p3-formula" style="text-align:center; font-family:monospace; margin-top:5px; font-weight:bold; color:#334155;">...</div>
     </div>
 
-    <!-- Panel 4: 周長 -->
+    <!-- === Activity 4: 周長 === -->
+    <div id="info-4" class="top-info-panel hidden">
+        <div class="concept-tag">扇形周長</div>
+        <div class="concept-content">
+            <div class="formula-large">扇形周長 = <span class="text-accent">弧長</span> + <span class="text-blue">兩條半徑</span></div>
+            <div style="font-size:0.9rem;">就像圍籬笆一樣，要把周圍全部圍起來喔！</div>
+        </div>
+    </div>
     <div id="panel-4" class="control-panel hidden">
-        <div style="text-align:center; font-weight:bold; display:flex; justify-content:center; align-items:center;">
-            4. 扇形周長
+        <div style="text-align:center; font-weight:bold; display:flex; justify-content:center; align-items:center; margin-bottom:5px;">
+            觀察周界的組成
             <button class="practice-link-btn" onclick="app.act5.startSpecificTopic(3)">前往練習</button>
         </div>
-        <div class="simple-panel-row">
+        <div class="controls-row">
             <label>比例: <span id="p4-frac-val">1/4</span></label>
             <input type="range" id="p4-slider" min="1" max="3" value="1">
         </div>
-        <div id="p4-formula" style="text-align:center; font-family:monospace; margin-top:5px;">...</div>
+        <div id="p4-formula" style="text-align:center; font-family:monospace; margin-top:5px; font-weight:bold; color:#334155;">...</div>
     </div>
 
-    <!-- Panel 5: 綜合練習中心 -->
+    <!-- === Activity 5: 練習中心 === -->
     <div id="panel-5" class="control-panel hidden">
+        <!-- 選單 -->
         <div id="quiz-menu-screen">
-            <h2 style="text-align:center; margin-bottom:10px;">選擇練習主題</h2>
+            <h2 style="text-align:center; margin:0 0 15px 0; color:var(--primary-dark);">選擇練習主題</h2>
             <div class="topic-menu">
                 <div class="topic-card" onclick="app.act5.startSpecificTopic(0)">
                     <h3>圓周率觀念</h3>
@@ -409,12 +443,16 @@
             </div>
         </div>
 
+        <!-- 遊戲中 -->
         <div id="quiz-game-screen" class="hidden">
-            <div class="concept-header">
-                <div class="concept-tag" id="quiz-progress">第 1 / 5 題</div>
-                <div class="concept-content" id="concept-text">
-                    <!-- 動態載入 -->
-                </div>
+            <!-- 題目標題列 -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-bottom:5px; border-bottom:1px solid #eee;">
+                <div class="concept-tag" style="position:static; transform:none;" id="quiz-progress">第 1 / 5 題</div>
+                <div style="font-size:0.9rem; color:#64748b;">概念重點</div>
+            </div>
+            
+            <div style="margin-bottom:15px; font-size:0.95rem; color:#333; background:#f1f5f9; padding:8px; border-radius:6px;" id="concept-text">
+                <!-- 動態載入重點 -->
             </div>
 
             <div class="quiz-area">
@@ -438,28 +476,29 @@
                     <div class="options-grid" id="step2-options"></div>
                 </div>
 
-                <div class="controls-row hidden" id="next-q-btn">
+                <div class="controls-row hidden" id="next-q-btn" style="margin-top:15px;">
                     <button class="action-btn" onclick="app.act5.nextQuestion()">下一題</button>
                 </div>
             </div>
         </div>
 
         <!-- 結算畫面 -->
-        <div id="quiz-result-screen" class="hidden" style="text-align:center;">
-            <h2>練習完成！</h2>
+        <div id="quiz-result-screen" class="hidden" style="text-align:center; padding:20px;">
+            <h2 style="color:var(--primary-dark);">練習完成！</h2>
             <p style="font-size:1.2rem; color:#64748b;">本次得分</p>
-            <p style="font-size:2.5rem; color:var(--accent-color); font-weight:bold;" id="session-score">100</p>
-            <p id="session-msg" style="margin-bottom:20px;">做得好！</p>
-            <div class="controls-row">
-                <button class="action-btn" onclick="app.act5.showMenu()">返回選單</button>
-            </div>
+            <p style="font-size:3rem; color:var(--accent-color); font-weight:bold; margin:10px 0;" id="session-score">100</p>
+            <p id="session-msg" style="margin-bottom:30px; font-size:1.1rem;">做得好！</p>
+            <button class="action-btn" onclick="app.act5.showMenu()">返回選單</button>
         </div>
     </div>
 </div>
 
 <script>
 /**
- * Math Interactive App - Final Integrated Version
+ * Math Interactive App - Grade 6 Unit 7 (Complete Integrated Version)
+ * Fixed layout issues: 
+ * 1. Added persistent top info panels for context.
+ * 2. Adjusted canvas drawing center to be visible between top/bottom panels.
  */
 
 class App {
@@ -482,8 +521,10 @@ class App {
     }
 
     resize() {
-        this.width = this.canvas.parentElement.offsetWidth;
-        this.height = this.canvas.parentElement.offsetHeight;
+        // Container size
+        const container = document.getElementById('main-container');
+        this.width = container.offsetWidth;
+        this.height = container.offsetHeight;
         this.canvas.width = this.width * this.pixelRatio;
         this.canvas.height = this.height * this.pixelRatio;
         this.ctx.scale(this.pixelRatio, this.pixelRatio);
@@ -495,8 +536,18 @@ class App {
         document.querySelectorAll('.nav-btn').forEach((b,i) => {
             if(i+1 === m) b.classList.add('active'); else b.classList.remove('active');
         });
+        
+        // Toggle Panels
         document.querySelectorAll('.control-panel').forEach(p => p.classList.add('hidden'));
-        document.getElementById(`panel-${m}`).classList.remove('hidden');
+        document.querySelectorAll('.top-info-panel').forEach(p => p.classList.add('hidden'));
+        
+        if (m <= 4) {
+            document.getElementById(`panel-${m}`).classList.remove('hidden');
+            document.getElementById(`info-${m}`).classList.remove('hidden');
+        } else {
+            document.getElementById(`panel-5`).classList.remove('hidden');
+        }
+        
         document.getElementById('score-display').classList.add('hidden');
 
         if(m===1) this.act1.reset();
@@ -521,7 +572,7 @@ class App {
     }
 }
 
-// --- Concept Activities 1-4 ---
+// --- 1. 圓周率 (Rolling Circle) ---
 class ActivityPi {
     constructor(app){ this.app=app; this.d=10; this.p=0; this.r=false; 
         document.getElementById('p1-slider').oninput=(e)=>{this.d=parseInt(e.target.value); document.getElementById('p1-d-val').innerText=this.d; this.reset();}
@@ -530,31 +581,35 @@ class ActivityPi {
     reset(){ this.r=false; this.p=0; document.getElementById('p1-res').classList.add('hidden'); }
     update(){ if(this.r){ this.p+=0.015; if(this.p>=1){this.p=1; this.r=false; document.getElementById('p1-res').classList.remove('hidden');}}}
     draw(ctx){
-        const sx=40, gy=this.app.height*0.6, sc=15, rpx=(this.d/2)*sc, cx=sx+(this.p*this.d*3.14*sc);
+        // Adjusted Y to be vertically centered better
+        const groundY = this.app.height * 0.55; 
+        const sx=40, sc=15, rpx=(this.d/2)*sc, cx=sx+(this.p*this.d*3.14*sc);
         
-        // Ruler Base Line
-        ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(this.app.width,gy); ctx.strokeStyle="#94a3b8"; ctx.lineWidth=2; ctx.stroke();
-        
-        // Ruler Ticks
+        // Ruler
+        ctx.beginPath(); ctx.moveTo(0,groundY); ctx.lineTo(this.app.width,groundY); ctx.strokeStyle="#94a3b8"; ctx.lineWidth=2; ctx.stroke();
         ctx.fillStyle="#64748b"; ctx.font="10px Arial"; ctx.textAlign="center";
         for(let i=0; i<=60; i+=1) {
             let x = sx + i*sc;
             if(x > this.app.width) break;
             let h = 5; if(i%5===0) h=10; if(i%10===0) h=15;
-            ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x, gy+h); ctx.strokeStyle="#94a3b8"; ctx.lineWidth=1; ctx.stroke();
-            if(i%5===0) ctx.fillText(i, x, gy+h+12);
+            ctx.beginPath(); ctx.moveTo(x, groundY); ctx.lineTo(x, groundY+h); ctx.strokeStyle="#94a3b8"; ctx.lineWidth=1; ctx.stroke();
+            if(i%5===0) ctx.fillText(i, x, groundY+h+12);
         }
 
-        if(this.p>0){ ctx.beginPath(); ctx.moveTo(sx,gy); ctx.lineTo(cx,gy); ctx.strokeStyle="#f59e0b"; ctx.lineWidth=4; ctx.stroke(); }
+        if(this.p>0){ ctx.beginPath(); ctx.moveTo(sx,groundY); ctx.lineTo(cx,groundY); ctx.strokeStyle="#f59e0b"; ctx.lineWidth=4; ctx.stroke(); }
         
-        ctx.save(); ctx.translate(cx,gy-rpx); ctx.rotate((cx-sx)/rpx);
+        ctx.save(); ctx.translate(cx,groundY-rpx); ctx.rotate((cx-sx)/rpx);
         ctx.beginPath(); ctx.arc(0,0,rpx,0,Math.PI*2); ctx.fillStyle="rgba(14,165,233,0.2)"; ctx.fill(); ctx.lineWidth=2; ctx.strokeStyle="#0369a1"; ctx.stroke();
         ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(rpx,0); ctx.stroke(); 
         ctx.beginPath(); ctx.arc(0,0,3,0,Math.PI*2); ctx.fillStyle="#0369a1"; ctx.fill();
         ctx.restore();
+        
+        // Label start
+        ctx.fillStyle = "#334155"; ctx.fillText("0", sx, groundY - 5);
     }
 }
 
+// --- 2. 圓周長 (Circumference) ---
 class ActivityCircumference {
     constructor(app){ this.app=app; this.r=10; document.getElementById('p2-slider').oninput=(e)=>{this.r=parseInt(e.target.value); this.updateUI();}}
     updateUI(){ 
@@ -562,50 +617,55 @@ class ActivityCircumference {
         document.getElementById('p2-formula').innerHTML=`直徑=${d}, 周長=${d}×3.14=${(d*3.14).toFixed(1)}`;
     }
     draw(ctx){
-        const cx=this.app.width/2, cy=this.app.height*0.4, sc=10, rpx=this.r*sc;
+        const cx=this.app.width/2, cy=this.app.height*0.5, sc=8, rpx=this.r*sc;
         ctx.beginPath(); ctx.arc(cx,cy,rpx,0,Math.PI*2); ctx.strokeStyle="#f59e0b"; ctx.lineWidth=4; ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+rpx,cy); ctx.strokeStyle="#0369a1"; ctx.lineWidth=2; ctx.stroke();
-        ctx.fillStyle="#333"; ctx.fillText(`r=${this.r}`, cx+10, cy-10);
+        ctx.fillStyle="rgba(14,165,233,0.1)"; ctx.fill();
+        ctx.beginPath(); ctx.moveTo(cx-rpx,cy); ctx.lineTo(cx+rpx,cy); ctx.strokeStyle="#0369a1"; ctx.lineWidth=2; ctx.stroke();
+        ctx.fillStyle="#0369a1"; ctx.font="bold 16px Arial"; ctx.textAlign="center"; ctx.fillText(`d=${this.r*2}`, cx, cy-10);
     }
 }
+
+// --- 3. 弧長 (Arc) ---
 class ActivityArc {
     constructor(app){ this.app=app; this.idx=1; document.getElementById('p3-slider').oninput=(e)=>{this.idx=parseInt(e.target.value); this.updateUI();}}
     updateUI(){
         const rats=[0.25,0.5,0.75], txts=["1/4","1/2","3/4"], r=10;
         const rat=rats[this.idx-1], txt=txts[this.idx-1];
         document.getElementById('p3-frac-val').innerText=txt;
-        document.getElementById('p3-formula').innerText=`弧長 = 20 × 3.14 × ${txt} = ${(62.8*rat).toFixed(1)}`;
+        document.getElementById('p3-formula').innerHTML=`弧長 = 20 × 3.14 × ${txt} = ${(62.8*rat).toFixed(1)}`;
     }
     draw(ctx){
-        const cx=this.app.width/2, cy=this.app.height*0.4, r=100, rats=[0.25,0.5,0.75];
+        const cx=this.app.width/2, cy=this.app.height*0.5, r=100, rats=[0.25,0.5,0.75];
         const ang = Math.PI*2*rats[this.idx-1];
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.strokeStyle = "#e2e8f0"; ctx.setLineDash([5,5]); ctx.stroke(); ctx.setLineDash([]);
         ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,0,-ang,true); ctx.fillStyle="rgba(14,165,233,0.1)"; ctx.fill();
         ctx.beginPath(); ctx.arc(cx,cy,r,0,-ang,true); ctx.strokeStyle="#f59e0b"; ctx.lineWidth=5; ctx.stroke();
         ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+r,cy); ctx.moveTo(cx,cy); ctx.lineTo(cx+Math.cos(-ang)*r, cy+Math.sin(-ang)*r); ctx.lineWidth=1; ctx.strokeStyle="#ccc"; ctx.stroke();
     }
 }
+
+// --- 4. 周長 (Perimeter) ---
 class ActivityPerimeter {
     constructor(app){ this.app=app; this.idx=1; document.getElementById('p4-slider').oninput=(e)=>{this.idx=parseInt(e.target.value); this.updateUI();}}
     updateUI(){
         const rats=[0.25,0.5,0.75], txts=["1/4","1/2","3/4"], r=10;
         const rat=rats[this.idx-1], txt=txts[this.idx-1], arc=62.8*rat;
         document.getElementById('p4-frac-val').innerText=txt;
-        document.getElementById('p4-formula').innerText=`周長 = 弧長(${(arc).toFixed(1)}) + 直徑(20) = ${(arc+20).toFixed(1)}`;
+        document.getElementById('p4-formula').innerHTML=`周長 = ${(arc).toFixed(1)} + 20 = ${(arc+20).toFixed(1)}`;
     }
     draw(ctx){
-        const cx=this.app.width/2, cy=this.app.height*0.4, r=100, rats=[0.25,0.5,0.75];
+        const cx=this.app.width/2, cy=this.app.height*0.5, r=100, rats=[0.25,0.5,0.75];
         const ang = Math.PI*2*rats[this.idx-1];
         ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,0,-ang,true); ctx.fillStyle="rgba(14,165,233,0.1)"; ctx.fill();
         ctx.beginPath(); ctx.arc(cx,cy,r,0,-ang,true); ctx.strokeStyle="#f59e0b"; ctx.lineWidth=5; ctx.stroke();
         ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+r,cy); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+Math.cos(-ang)*r, cy+Math.sin(-ang)*r); 
         ctx.strokeStyle="#0369a1"; ctx.lineWidth=4; ctx.stroke();
+        ctx.fillStyle="#334155"; ctx.font="20px Arial"; ctx.fillText("+", cx+r/2, cy-10);
     }
 }
 
-/**
- * 5. Practice Quiz Center (Enhanced with 10-Q pool)
- */
+// --- 5. 題庫練習中心 ---
 class ActivityQuizCenter {
     constructor(app) {
         this.app = app;
@@ -665,93 +725,57 @@ class ActivityQuizCenter {
     }
 
     getRandomNum() {
-        // Easy numbers: 1-10, 20, 30...
         const pool = [1,2,3,4,5,6,7,8,9,10,20,30,40,50];
         return pool[Math.floor(Math.random() * pool.length)];
     }
 
     generateQuestion() {
         const t = this.topics[this.currentTopic].type;
-        
-        // --- 10-Question Pool Logic Integrated ---
         if (t === "tf") {
             const pool = [
                 { q: "圓周率是一個固定的數，大約是 3.14", ans: true, hint: "沒錯，圓周長除以直徑大約是3.14" },
                 { q: "圓周長是直徑的 2 倍", ans: false, hint: "是 3.14 倍喔！" },
                 { q: "不管圓多大，圓周率都是 3.14", ans: true, hint: "對的，圓周率不會變。" },
                 { q: "計算圓周長要用半徑直接乘以 3.14", ans: false, hint: "要用直徑(半徑x2)喔！" },
-                { q: "直徑越長，圓周長也會越長", ans: true, hint: "沒錯，兩者是相關的。" },
-                { q: "半徑 3 公分的圓，圓周長大約是 9.42", ans: false, hint: "是半徑x2x3.14，所以是18.84" }
+                { q: "直徑越長，圓周長也會越長", ans: true, hint: "沒錯，兩者是相關的。" }
             ];
             const qData = pool[Math.floor(Math.random()*pool.length)];
-            return {
-                text: qData.q, type: 'tf',
-                step1: { q: "這句話是...", opts: ["正確 (O)", "錯誤 (X)"], correct: qData.ans ? 0 : 1 },
-                step2: null, hint: qData.hint
-            };
+            return { text: qData.q, type: 'tf', step1: { q: "這句話是...", opts: ["正確 (O)", "錯誤 (X)"], correct: qData.ans ? 0 : 1 }, step2: null, hint: qData.hint };
         } 
         else if (t === "calc_circle") {
-            // Q1, Q2, Q6, Q10 Logic
             const isRadius = Math.random() > 0.5;
             const val = this.getRandomNum();
             const d = isRadius ? val * 2 : val;
-            
             return {
                 text: `算出圓形周長，${isRadius ? '半徑' : '直徑'}是 ${val} 公分`,
                 type: 'circle', r: isRadius ? val : val/2, d: d, showD: !isRadius,
-                step1: {
-                    q: "題目給的是直徑還是半徑？",
-                    opts: isRadius ? ["直徑", "半徑"] : ["直徑", "半徑"],
-                    correct: isRadius ? 1 : 0
-                },
-                step2: {
-                    q: "請選擇正確算式：",
-                    opts: isRadius 
-                        ? [`${val} × 3.14`, `${val} × 2 × 3.14`]
-                        : [`${val} × 3.14`, `${val} × 2 × 3.14`],
-                    correct: isRadius ? 1 : 0
-                },
+                step1: { q: "題目給的是直徑還是半徑？", opts: isRadius ? ["直徑", "半徑"] : ["直徑", "半徑"], correct: isRadius ? 1 : 0 },
+                step2: { q: "請選擇正確算式：", opts: isRadius ? [`${val} × 3.14`, `${val} × 2 × 3.14`] : [`${val} × 3.14`, `${val} × 2 × 3.14`], correct: isRadius ? 1 : 0 },
                 hint: isRadius ? "給半徑要先變直徑(x2)喔！" : "給直徑直接乘 3.14 即可。"
             };
         }
         else if (t === "calc_arc") {
-            // Q3, Q4, Q8 Logic
             const r = this.getRandomNum();
-            // Use fractions instead of degrees
-            const fractions = [
-                { txt: "1/2", val: 0.5 }, { txt: "1/3", val: 1/3 },
-                { txt: "1/4", val: 0.25 }, { txt: "1/6", val: 1/6 }
-            ];
+            const fractions = [{ txt: "1/2", val: 0.5 }, { txt: "1/3", val: 1/3 }, { txt: "1/4", val: 0.25 }, { txt: "1/6", val: 1/6 }];
             const f = fractions[Math.floor(Math.random()*fractions.length)];
-            
             return {
                 text: `算出半徑 ${r}公分，${f.txt}圓的弧長`,
                 type: 'sector', r: r, frac: f.val,
                 step1: { q: "這是幾分之幾圓？", opts: [`${f.txt} 圓`, "1 圓"], correct: 0 },
-                step2: { 
-                    q: "弧長算式：", 
-                    opts: [`${r*2}×3.14×${f.txt}`, `${r}×3.14×${f.txt}`], 
-                    correct: 0 
-                },
+                step2: { q: "弧長算式：", opts: [`${r*2}×3.14×${f.txt}`, `${r}×3.14×${f.txt}`], correct: 0 },
                 hint: "記得先算直徑(半徑x2)的圓周長，再乘比例。"
             };
         }
         else if (t === "calc_peri") {
-             // Q5, Q7, Q9 Logic
              const r = this.getRandomNum();
              const fractions = [ { txt: "1/2", val: 0.5 }, { txt: "1/4", val: 0.25 } ];
              const f = fractions[Math.floor(Math.random()*fractions.length)];
              const arc = (r * 2 * 3.14 * f.val).toFixed(2);
-             
              return {
                 text: `算出半徑 ${r}公分，${f.txt} 圓的「扇形周長」`,
                 type: 'sector', r: r, frac: f.val,
                 step1: { q: "扇形周長包含什麼？", opts: ["只有弧長", "弧長 + 2條半徑"], correct: 1 },
-                step2: { 
-                    q: "正確算式：", 
-                    opts: [`${arc} + ${r}`, `${arc} + ${r*2}`], 
-                    correct: 1 
-                },
+                step2: { q: "正確算式：", opts: [`${arc} + ${r}`, `${arc} + ${r*2}`], correct: 1 },
                 hint: `弧長約${arc}，還要加上兩條半徑(直徑${r*2})喔！`
             };
         }
@@ -763,7 +787,6 @@ class ActivityQuizCenter {
         document.getElementById('hint-box').classList.add('hidden');
         document.getElementById('hint-box').innerText = q.hint;
         document.getElementById('next-q-btn').classList.add('hidden');
-        
         document.getElementById('step1-title').innerText = q.step1.q;
         this.renderOptions('step1-options', q.step1.opts, (idx) => this.checkStep1(idx));
         document.getElementById('step2-block').classList.add('hidden');
@@ -785,30 +808,20 @@ class ActivityQuizCenter {
         const q = this.currentQ;
         const btns = document.getElementById('step1-options').children;
         for(let b of btns) b.style.pointerEvents = 'none'; 
-
         if(idx === q.step1.correct) {
-            btns[idx].classList.add('correct');
-            btns[idx].innerHTML = `<span>☑ ${q.step1.opts[idx]}</span>`;
+            btns[idx].classList.add('correct'); btns[idx].innerHTML = `<span>☑ ${q.step1.opts[idx]}</span>`;
             this.app.act5.speak("答對了");
-            
             if(q.step2) {
                 setTimeout(() => {
                     document.getElementById('step2-block').classList.remove('hidden');
                     document.getElementById('step2-title').innerText = q.step2.q;
                     this.renderOptions('step2-options', q.step2.opts, (i) => this.checkStep2(i));
                 }, 800);
-            } else {
-                this.finishQuestion();
-            }
+            } else { this.finishQuestion(); }
         } else {
-            btns[idx].classList.add('wrong');
-            btns[idx].innerHTML = `<span>☒ ${q.step1.opts[idx]}</span>`;
+            btns[idx].classList.add('wrong'); btns[idx].innerHTML = `<span>☒ ${q.step1.opts[idx]}</span>`;
             this.app.act5.speak("再試試看");
-            setTimeout(() => {
-                for(let b of btns) b.style.pointerEvents = 'auto';
-                btns[idx].classList.remove('wrong');
-                btns[idx].innerHTML = `<span>□ ${q.step1.opts[idx]}</span>`;
-            }, 1000);
+            setTimeout(() => { for(let b of btns) b.style.pointerEvents = 'auto'; btns[idx].classList.remove('wrong'); btns[idx].innerHTML = `<span>□ ${q.step1.opts[idx]}</span>`; }, 1000);
         }
     }
 
@@ -816,30 +829,21 @@ class ActivityQuizCenter {
         const q = this.currentQ;
         const btns = document.getElementById('step2-options').children;
         for(let b of btns) b.style.pointerEvents = 'none';
-
         if(idx === q.step2.correct) {
-            btns[idx].classList.add('correct');
-            btns[idx].innerHTML = `<span>☑ ${q.step2.opts[idx]}</span>`;
+            btns[idx].classList.add('correct'); btns[idx].innerHTML = `<span>☑ ${q.step2.opts[idx]}</span>`;
             this.app.act5.speak("太棒了");
             this.finishQuestion();
         } else {
-            btns[idx].classList.add('wrong');
-            btns[idx].innerHTML = `<span>☒ ${q.step2.opts[idx]}</span>`;
+            btns[idx].classList.add('wrong'); btns[idx].innerHTML = `<span>☒ ${q.step2.opts[idx]}</span>`;
             this.app.act5.speak("公式選錯囉");
-            setTimeout(() => {
-                for(let b of btns) b.style.pointerEvents = 'auto';
-                btns[idx].classList.remove('wrong');
-                btns[idx].innerHTML = `<span>□ ${q.step2.opts[idx]}</span>`;
-            }, 1000);
+            setTimeout(() => { for(let b of btns) b.style.pointerEvents = 'auto'; btns[idx].classList.remove('wrong'); btns[idx].innerHTML = `<span>□ ${q.step2.opts[idx]}</span>`; }, 1000);
         }
     }
 
     finishQuestion() {
-        this.score += 10;
+        this.score += 20;
         this.app.updateScore(this.score);
-        setTimeout(() => {
-            document.getElementById('next-q-btn').classList.remove('hidden');
-        }, 500);
+        setTimeout(() => { document.getElementById('next-q-btn').classList.remove('hidden'); }, 500);
     }
 
     toggleHint() { document.getElementById('hint-box').classList.toggle('hidden'); }
@@ -847,9 +851,7 @@ class ActivityQuizCenter {
     speak(txt) {
         if('speechSynthesis' in window) {
             window.speechSynthesis.cancel();
-            const u = new SpeechSynthesisUtterance(txt);
-            u.lang = 'zh-TW';
-            window.speechSynthesis.speak(u);
+            const u = new SpeechSynthesisUtterance(txt); u.lang = 'zh-TW'; window.speechSynthesis.speak(u);
         }
     }
     updateScore() { document.getElementById('score-display').innerText = `總分: ${this.score}`; }
@@ -860,7 +862,7 @@ class ActivityQuizCenter {
         if(!q || !q.type || q.type === 'tf') return;
 
         const cx = this.app.width / 2;
-        const cy = this.app.height * 0.35;
+        const cy = this.app.height * 0.35; // Keep quiz visual higher to avoid panel overlap
         const scale = 6; 
         ctx.lineWidth = 3;
 
@@ -868,7 +870,6 @@ class ActivityQuizCenter {
             const r = q.r * scale;
             ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); 
             ctx.strokeStyle="#333"; ctx.stroke(); ctx.fillStyle="#fff"; ctx.fill();
-            
             ctx.beginPath();
             if(q.showD) {
                 ctx.setLineDash([5,5]); ctx.moveTo(cx-r, cy); ctx.lineTo(cx+r, cy); ctx.stroke(); ctx.setLineDash([]);
