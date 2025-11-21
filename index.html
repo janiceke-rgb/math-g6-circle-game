@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>國小數學6上-L7 圓周長與扇形互動教材（完整版）</title>
+    <style>
+        :root {
+            --primary-color: #0ea5e9; /* Sky 500 */
+            --primary-dark: #0369a1;
+            --accent-color: #f59e0b; /* Amber 500 */
+            --danger-color: #ef4444;
+            --success-color: #22c55e;
+            --bg-color: #f8fafc;
+            --text-color: #334155;
+            --green-text: #16a34a; /* Green 600 */
+            --blue-text: #2563eb; /* Blue 600 */
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* 導航列 */
+        header {
+            background-color: white;
+            padding: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 1.1rem;
+            margin: 0;
+            color: var(--primary-dark);
+            font-weight: 700;
+        }
+
+        .nav-group {
+            display: flex;
+            gap: 5px;
+            overflow-x: auto;
+            padding-bottom: 2px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .nav-btn {
+            background: #e0f2fe;
+            border: none;
+            color: var(--primary-dark);
+            padding: 6px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: bold;
+            white-space: nowrap;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .nav-btn.active {
+            background-color: var(--primary-dark);
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .nav-btn.challenge-btn {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        /* 畫布與容器 */
+        #canvas-container {
+            flex: 1;
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-color: #ffffff;
+            touch-action: none;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 通用面板樣式 */
+        .control-panel {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255, 255, 255, 0.98);
+            padding: 15px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            width: 95%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: opacity 0.3s ease;
+            border: 1px solid #e2e8f0;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        /* --- 練習模式相關樣式 --- */
+
+        .topic-menu {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .topic-card {
+            background: white;
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .topic-card:hover {
+            border-color: var(--primary-color);
+            background-color: #f0f9ff;
+            transform: translateY(-2px);
+        }
+        
+        .topic-card h3 { margin: 0 0 5px 0; color: var(--primary-dark); font-size: 1rem;}
+        .topic-card p { margin: 0; font-size: 0.8rem; color: #64748b; }
+
+        .concept-header {
+            border: 2px solid #94a3b8;
+            background-color: #f1f5f9;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            position: relative;
+        }
+        
+        .concept-tag {
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            background: #cbd5e1;
+            padding: 2px 8px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            border: 1px solid #94a3b8;
+            border-radius: 4px;
+            color: #334155;
+        }
+
+        .concept-content {
+            margin-top: 8px;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #333;
+        }
+
+        .text-green { color: var(--green-text); font-weight: bold; }
+        .text-blue { color: var(--blue-text); font-weight: bold; }
+        .formula-large { font-size: 1.1rem; font-weight: bold; margin: 5px 0; }
+
+        .quiz-area {
+            background-color: white;
+            border: 1px solid #cbd5e1;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .step-block {
+            margin-top: 10px;
+            padding: 8px;
+            background-color: #f8fafc;
+            border-left: 4px solid var(--blue-text);
+            border-radius: 4px;
+        }
+
+        .step-title {
+            color: var(--blue-text);
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .options-grid {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .choice-btn {
+            flex: 1;
+            min-width: 45%;
+            padding: 10px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            text-align: center;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .choice-btn:hover { border-color: var(--primary-color); background-color: #f0f9ff; }
+        .choice-btn.correct { background-color: #dcfce7; border-color: var(--success-color); color: #166534; }
+        .choice-btn.wrong { background-color: #fee2e2; border-color: var(--danger-color); color: #991b1b; }
+
+        .hint-btn {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #92400e;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+        
+        .hint-box {
+            background-color: #fffbeb;
+            border: 1px solid #fcd34d;
+            padding: 8px;
+            margin-top: 5px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: #92400e;
+        }
+
+        .tts-btn { background: none; border: none; cursor: pointer; font-size: 1.2rem; }
+
+        .controls-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        button.action-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 3px 0 #d97706;
+        }
+        button.action-btn:active { transform: translateY(3px); box-shadow: none; }
+
+        .practice-link-btn {
+            margin-left: 10px;
+            background-color: var(--success-color);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .hidden { display: none !important; }
+
+        .simple-panel-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        input[type="range"] { width: 140px; accent-color: var(--primary-color); }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-top">
+        <h1>圓周長與扇形周長</h1>
+        <div id="score-display" class="hidden" style="font-weight:bold; color:var(--accent-color);">得分: 0</div>
+    </div>
+    <div class="nav-group">
+        <button class="nav-btn active" onclick="app.switchMode(1)">1. 圓周率</button>
+        <button class="nav-btn" onclick="app.switchMode(2)">2. 圓周長</button>
+        <button class="nav-btn" onclick="app.switchMode(3)">3. 扇形弧長</button>
+        <button class="nav-btn" onclick="app.switchMode(4)">4. 扇形周長</button>
+        <button class="nav-btn challenge-btn" onclick="app.switchMode(5)">5. 練習中心</button>
+    </div>
+</header>
+
+<div id="canvas-container">
+    <canvas id="mainCanvas"></canvas>
+    
+    <!-- Panel 1: 圓周率 -->
+    <div id="panel-1" class="control-panel">
+        <div style="text-align:center; font-weight:bold; display:flex; justify-content:center; align-items:center;">
+            1. 認識圓周率
+            <button class="practice-link-btn" onclick="app.act5.startSpecificTopic(0)">前往練習</button>
+        </div>
+        <div class="simple-panel-row">
+            <label>直徑: <span id="p1-d-val">10</span></label>
+            <input type="range" id="p1-slider" min="5" max="15" value="10">
+            <button class="action-btn" onclick="app.act1.roll()">滾動</button>
+            <button class="action-btn" style="background:#94a3b8;" onclick="app.act1.reset()">重置</button>
+        </div>
+        <div id="p1-res" class="hidden" style="text-align:center; margin-top:5px; font-weight:bold; color:var(--accent-color);">圓周率 $\approx$ 3.14</div>
+    </div>
+
+    <!-- Panel 2: 圓周長 -->
+    <div id="panel-2" class="control-panel hidden">
+        <div style="text-align:center; font-weight:bold; display:flex; justify-content:center; align-items:center;">
+            2. 圓周長公式
+            <button class="practice-link-btn" onclick="app.act5.startSpecificTopic(1)">前往練習</button>
+        </div>
+        <div class="simple-panel-row">
+            <label>半徑: <span id="p2-r-val">10</span></label>
+            <input type="range" id="p2-slider" min="5" max="20" value="10" step="5">
+        </div>
+        <div id="p2-formula" style="text-align:center; font-family:monospace; margin-top:5px;">...</div>
+    </div>
+
+    <!-- Panel 3: 弧長 -->
+    <div id="panel-3" class="control-panel hidden">
+        <div style="text-align:center; font-weight:bold; display:flex; justify-content:center; align-items:center;">
+            3. 扇形弧長
+            <button class="practice-link-btn" onclick="app.act5.startSpecificTopic(2)">前往練習</button>
+        </div>
+        <div class="simple-panel-row">
+            <label>比例: <span id="p3-frac-val">1/4</span></label>
+            <input type="range" id="p3-slider" min="1" max="3" value="1">
+        </div>
+        <div id="p3-formula" style="text-align:center; font-family:monospace; margin-top:5px;">...</div>
+    </div>
+
+    <!-- Panel 4: 周長 -->
+    <div id="panel-4" class="control-panel hidden">
+        <div style="text-align:center; font-weight:bold; display:flex; justify-content:center; align-items:center;">
+            4. 扇形周長
+            <button class="practice-link-btn" onclick="app.act5.startSpecificTopic(3)">前往練習</button>
+        </div>
+        <div class="simple-panel-row">
+            <label>比例: <span id="p4-frac-val">1/4</span></label>
+            <input type="range" id="p4-slider" min="1" max="3" value="1">
+        </div>
+        <div id="p4-formula" style="text-align:center; font-family:monospace; margin-top:5px;">...</div>
+    </div>
+
+    <!-- Panel 5: 綜合練習中心 -->
+    <div id="panel-5" class="control-panel hidden">
+        <div id="quiz-menu-screen">
+            <h2 style="text-align:center; margin-bottom:10px;">選擇練習主題</h2>
+            <div class="topic-menu">
+                <div class="topic-card" onclick="app.act5.startSpecificTopic(0)">
+                    <h3>圓周率觀念</h3>
+                    <p>是非題判斷</p>
+                </div>
+                <div class="topic-card" onclick="app.act5.startSpecificTopic(1)">
+                    <h3>圓周長計算</h3>
+                    <p>直徑/半徑混合題</p>
+                </div>
+                <div class="topic-card" onclick="app.act5.startSpecificTopic(2)">
+                    <h3>扇形弧長</h3>
+                    <p>比例與弧長計算</p>
+                </div>
+                <div class="topic-card" onclick="app.act5.startSpecificTopic(3)">
+                    <h3>扇形周長</h3>
+                    <p>弧長+半徑挑戰</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="quiz-game-screen" class="hidden">
+            <div class="concept-header">
+                <div class="concept-tag" id="quiz-progress">第 1 / 5 題</div>
+                <div class="concept-content" id="concept-text">
+                    <!-- 動態載入 -->
+                </div>
+            </div>
+
+            <div class="quiz-area">
+                <div class="question-text">
+                    <span id="q-text" style="flex:1;">題目載入中...</span>
+                    <div style="display:flex; gap:5px;">
+                        <button class="hint-btn" onclick="app.act5.toggleHint()">💡 提示</button>
+                        <button class="tts-btn" onclick="app.act5.speakQ()">🔊</button>
+                    </div>
+                </div>
+                
+                <div id="hint-box" class="hint-box hidden"></div>
+
+                <div class="step-block" id="step1-block">
+                    <div class="step-title" id="step1-title">① 判斷</div>
+                    <div class="options-grid" id="step1-options"></div>
+                </div>
+
+                <div class="step-block hidden" id="step2-block">
+                    <div class="step-title" id="step2-title">② 計算</div>
+                    <div class="options-grid" id="step2-options"></div>
+                </div>
+
+                <div class="controls-row hidden" id="next-q-btn">
+                    <button class="action-btn" onclick="app.act5.nextQuestion()">下一題</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 結算畫面 -->
+        <div id="quiz-result-screen" class="hidden" style="text-align:center;">
+            <h2>練習完成！</h2>
+            <p style="font-size:1.2rem; color:#64748b;">本次得分</p>
+            <p style="font-size:2.5rem; color:var(--accent-color); font-weight:bold;" id="session-score">100</p>
+            <p id="session-msg" style="margin-bottom:20px;">做得好！</p>
+            <div class="controls-row">
+                <button class="action-btn" onclick="app.act5.showMenu()">返回選單</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+/**
+ * Math Interactive App - Final Integrated Version
+ */
+
+class App {
+    constructor() {
+        this.canvas = document.getElementById('mainCanvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.width = 0; this.height = 0; this.pixelRatio = window.devicePixelRatio || 1;
+        
+        this.act1 = new ActivityPi(this);
+        this.act2 = new ActivityCircumference(this);
+        this.act3 = new ActivityArc(this);
+        this.act4 = new ActivityPerimeter(this);
+        this.act5 = new ActivityQuizCenter(this);
+
+        this.mode = 1;
+        window.addEventListener('resize', () => this.resize());
+        this.resize();
+        this.loop = this.loop.bind(this);
+        requestAnimationFrame(this.loop);
+    }
+
+    resize() {
+        this.width = this.canvas.parentElement.offsetWidth;
+        this.height = this.canvas.parentElement.offsetHeight;
+        this.canvas.width = this.width * this.pixelRatio;
+        this.canvas.height = this.height * this.pixelRatio;
+        this.ctx.scale(this.pixelRatio, this.pixelRatio);
+        this.render();
+    }
+
+    switchMode(m) {
+        this.mode = m;
+        document.querySelectorAll('.nav-btn').forEach((b,i) => {
+            if(i+1 === m) b.classList.add('active'); else b.classList.remove('active');
+        });
+        document.querySelectorAll('.control-panel').forEach(p => p.classList.add('hidden'));
+        document.getElementById(`panel-${m}`).classList.remove('hidden');
+        document.getElementById('score-display').classList.add('hidden');
+
+        if(m===1) this.act1.reset();
+        if(m===2) this.act2.updateUI();
+        if(m===3) this.act3.updateUI();
+        if(m===4) this.act4.updateUI();
+        if(m===5) {
+            this.act5.showMenu();
+            document.getElementById('score-display').classList.remove('hidden');
+        }
+    }
+
+    loop() { this.update(); this.render(); requestAnimationFrame(this.loop); }
+    update() { if(this.mode===1) this.act1.update(); }
+    render() {
+        this.ctx.clearRect(0,0,this.width,this.height);
+        if(this.mode===1) this.act1.draw(this.ctx);
+        if(this.mode===2) this.act2.draw(this.ctx);
+        if(this.mode===3) this.act3.draw(this.ctx);
+        if(this.mode===4) this.act4.draw(this.ctx);
+        if(this.mode===5) this.act5.draw(this.ctx);
+    }
+}
+
+// --- Concept Activities 1-4 ---
+class ActivityPi {
+    constructor(app){ this.app=app; this.d=10; this.p=0; this.r=false; 
+        document.getElementById('p1-slider').oninput=(e)=>{this.d=parseInt(e.target.value); document.getElementById('p1-d-val').innerText=this.d; this.reset();}
+    }
+    roll(){ if(!this.r && this.p<1) {this.r=true; document.getElementById('p1-res').classList.add('hidden');}}
+    reset(){ this.r=false; this.p=0; document.getElementById('p1-res').classList.add('hidden'); }
+    update(){ if(this.r){ this.p+=0.015; if(this.p>=1){this.p=1; this.r=false; document.getElementById('p1-res').classList.remove('hidden');}}}
+    draw(ctx){
+        const sx=40, gy=this.app.height*0.6, sc=15, rpx=(this.d/2)*sc, cx=sx+(this.p*this.d*3.14*sc);
+        
+        // Ruler Base Line
+        ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(this.app.width,gy); ctx.strokeStyle="#94a3b8"; ctx.lineWidth=2; ctx.stroke();
+        
+        // Ruler Ticks
+        ctx.fillStyle="#64748b"; ctx.font="10px Arial"; ctx.textAlign="center";
+        for(let i=0; i<=60; i+=1) {
+            let x = sx + i*sc;
+            if(x > this.app.width) break;
+            let h = 5; if(i%5===0) h=10; if(i%10===0) h=15;
+            ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x, gy+h); ctx.strokeStyle="#94a3b8"; ctx.lineWidth=1; ctx.stroke();
+            if(i%5===0) ctx.fillText(i, x, gy+h+12);
+        }
+
+        if(this.p>0){ ctx.beginPath(); ctx.moveTo(sx,gy); ctx.lineTo(cx,gy); ctx.strokeStyle="#f59e0b"; ctx.lineWidth=4; ctx.stroke(); }
+        
+        ctx.save(); ctx.translate(cx,gy-rpx); ctx.rotate((cx-sx)/rpx);
+        ctx.beginPath(); ctx.arc(0,0,rpx,0,Math.PI*2); ctx.fillStyle="rgba(14,165,233,0.2)"; ctx.fill(); ctx.lineWidth=2; ctx.strokeStyle="#0369a1"; ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(rpx,0); ctx.stroke(); 
+        ctx.beginPath(); ctx.arc(0,0,3,0,Math.PI*2); ctx.fillStyle="#0369a1"; ctx.fill();
+        ctx.restore();
+    }
+}
+
+class ActivityCircumference {
+    constructor(app){ this.app=app; this.r=10; document.getElementById('p2-slider').oninput=(e)=>{this.r=parseInt(e.target.value); this.updateUI();}}
+    updateUI(){ 
+        const d=this.r*2; document.getElementById('p2-r-val').innerText=this.r; 
+        document.getElementById('p2-formula').innerHTML=`直徑=${d}, 周長=${d}×3.14=${(d*3.14).toFixed(1)}`;
+    }
+    draw(ctx){
+        const cx=this.app.width/2, cy=this.app.height*0.4, sc=10, rpx=this.r*sc;
+        ctx.beginPath(); ctx.arc(cx,cy,rpx,0,Math.PI*2); ctx.strokeStyle="#f59e0b"; ctx.lineWidth=4; ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+rpx,cy); ctx.strokeStyle="#0369a1"; ctx.lineWidth=2; ctx.stroke();
+        ctx.fillStyle="#333"; ctx.fillText(`r=${this.r}`, cx+10, cy-10);
+    }
+}
+class ActivityArc {
+    constructor(app){ this.app=app; this.idx=1; document.getElementById('p3-slider').oninput=(e)=>{this.idx=parseInt(e.target.value); this.updateUI();}}
+    updateUI(){
+        const rats=[0.25,0.5,0.75], txts=["1/4","1/2","3/4"], r=10;
+        const rat=rats[this.idx-1], txt=txts[this.idx-1];
+        document.getElementById('p3-frac-val').innerText=txt;
+        document.getElementById('p3-formula').innerText=`弧長 = 20 × 3.14 × ${txt} = ${(62.8*rat).toFixed(1)}`;
+    }
+    draw(ctx){
+        const cx=this.app.width/2, cy=this.app.height*0.4, r=100, rats=[0.25,0.5,0.75];
+        const ang = Math.PI*2*rats[this.idx-1];
+        ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,0,-ang,true); ctx.fillStyle="rgba(14,165,233,0.1)"; ctx.fill();
+        ctx.beginPath(); ctx.arc(cx,cy,r,0,-ang,true); ctx.strokeStyle="#f59e0b"; ctx.lineWidth=5; ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+r,cy); ctx.moveTo(cx,cy); ctx.lineTo(cx+Math.cos(-ang)*r, cy+Math.sin(-ang)*r); ctx.lineWidth=1; ctx.strokeStyle="#ccc"; ctx.stroke();
+    }
+}
+class ActivityPerimeter {
+    constructor(app){ this.app=app; this.idx=1; document.getElementById('p4-slider').oninput=(e)=>{this.idx=parseInt(e.target.value); this.updateUI();}}
+    updateUI(){
+        const rats=[0.25,0.5,0.75], txts=["1/4","1/2","3/4"], r=10;
+        const rat=rats[this.idx-1], txt=txts[this.idx-1], arc=62.8*rat;
+        document.getElementById('p4-frac-val').innerText=txt;
+        document.getElementById('p4-formula').innerText=`周長 = 弧長(${(arc).toFixed(1)}) + 直徑(20) = ${(arc+20).toFixed(1)}`;
+    }
+    draw(ctx){
+        const cx=this.app.width/2, cy=this.app.height*0.4, r=100, rats=[0.25,0.5,0.75];
+        const ang = Math.PI*2*rats[this.idx-1];
+        ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,0,-ang,true); ctx.fillStyle="rgba(14,165,233,0.1)"; ctx.fill();
+        ctx.beginPath(); ctx.arc(cx,cy,r,0,-ang,true); ctx.strokeStyle="#f59e0b"; ctx.lineWidth=5; ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+r,cy); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+Math.cos(-ang)*r, cy+Math.sin(-ang)*r); 
+        ctx.strokeStyle="#0369a1"; ctx.lineWidth=4; ctx.stroke();
+    }
+}
+
+/**
+ * 5. Practice Quiz Center (Enhanced with 10-Q pool)
+ */
+class ActivityQuizCenter {
+    constructor(app) {
+        this.app = app;
+        this.score = 0;
+        this.currentTopic = 0;
+        this.currentQ = null;
+        this.sessionCount = 0;
+        this.maxSession = 5;
+        this.topics = [
+            { title: "圓周率觀念", concept: "圓周率大約是 3.14。<br>圓周長 ÷ 直徑 = 圓周率。", type: "tf" },
+            { title: "圓周長計算", concept: "圓周長 = 直徑 × 3.14<br>= 半徑 × 2 × 3.14", type: "calc_circle" },
+            { title: "扇形弧長", concept: "弧長 = 圓周長 × 幾分之幾", type: "calc_arc" },
+            { title: "扇形周長", concept: "扇形周長 = 弧長 + 兩條半徑", type: "calc_peri" }
+        ];
+    }
+
+    startSpecificTopic(topicIdx) {
+        this.app.switchMode(5);
+        this.currentTopic = topicIdx;
+        this.sessionCount = 0;
+        this.score = 0;
+        this.startGame();
+    }
+
+    showMenu() {
+        document.getElementById('quiz-menu-screen').classList.remove('hidden');
+        document.getElementById('quiz-game-screen').classList.add('hidden');
+        document.getElementById('quiz-result-screen').classList.add('hidden');
+        this.app.updateScore(this.score);
+    }
+
+    startGame() {
+        document.getElementById('quiz-menu-screen').classList.add('hidden');
+        document.getElementById('quiz-game-screen').classList.remove('hidden');
+        document.getElementById('quiz-result-screen').classList.add('hidden');
+        document.getElementById('concept-text').innerHTML = this.topics[this.currentTopic].concept;
+        this.nextQuestion();
+    }
+
+    nextQuestion() {
+        this.sessionCount++;
+        if (this.sessionCount > this.maxSession) {
+            this.showResult();
+            return;
+        }
+        document.getElementById('quiz-progress').innerText = `第 ${this.sessionCount} / ${this.maxSession} 題`;
+        this.currentQ = this.generateQuestion();
+        this.renderQuestion();
+    }
+
+    showResult() {
+        document.getElementById('quiz-game-screen').classList.add('hidden');
+        document.getElementById('quiz-result-screen').classList.remove('hidden');
+        document.getElementById('session-score').innerText = this.score;
+        let msg = this.score >= 50 ? "太棒了！滿分！🌟" : (this.score >= 30 ? "表現不錯，繼續加油！💪" : "多練習會更進步喔！🌱");
+        document.getElementById('session-msg').innerText = msg;
+    }
+
+    getRandomNum() {
+        // Easy numbers: 1-10, 20, 30...
+        const pool = [1,2,3,4,5,6,7,8,9,10,20,30,40,50];
+        return pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    generateQuestion() {
+        const t = this.topics[this.currentTopic].type;
+        
+        // --- 10-Question Pool Logic Integrated ---
+        if (t === "tf") {
+            const pool = [
+                { q: "圓周率是一個固定的數，大約是 3.14", ans: true, hint: "沒錯，圓周長除以直徑大約是3.14" },
+                { q: "圓周長是直徑的 2 倍", ans: false, hint: "是 3.14 倍喔！" },
+                { q: "不管圓多大，圓周率都是 3.14", ans: true, hint: "對的，圓周率不會變。" },
+                { q: "計算圓周長要用半徑直接乘以 3.14", ans: false, hint: "要用直徑(半徑x2)喔！" },
+                { q: "直徑越長，圓周長也會越長", ans: true, hint: "沒錯，兩者是相關的。" },
+                { q: "半徑 3 公分的圓，圓周長大約是 9.42", ans: false, hint: "是半徑x2x3.14，所以是18.84" }
+            ];
+            const qData = pool[Math.floor(Math.random()*pool.length)];
+            return {
+                text: qData.q, type: 'tf',
+                step1: { q: "這句話是...", opts: ["正確 (O)", "錯誤 (X)"], correct: qData.ans ? 0 : 1 },
+                step2: null, hint: qData.hint
+            };
+        } 
+        else if (t === "calc_circle") {
+            // Q1, Q2, Q6, Q10 Logic
+            const isRadius = Math.random() > 0.5;
+            const val = this.getRandomNum();
+            const d = isRadius ? val * 2 : val;
+            
+            return {
+                text: `算出圓形周長，${isRadius ? '半徑' : '直徑'}是 ${val} 公分`,
+                type: 'circle', r: isRadius ? val : val/2, d: d, showD: !isRadius,
+                step1: {
+                    q: "題目給的是直徑還是半徑？",
+                    opts: isRadius ? ["直徑", "半徑"] : ["直徑", "半徑"],
+                    correct: isRadius ? 1 : 0
+                },
+                step2: {
+                    q: "請選擇正確算式：",
+                    opts: isRadius 
+                        ? [`${val} × 3.14`, `${val} × 2 × 3.14`]
+                        : [`${val} × 3.14`, `${val} × 2 × 3.14`],
+                    correct: isRadius ? 1 : 0
+                },
+                hint: isRadius ? "給半徑要先變直徑(x2)喔！" : "給直徑直接乘 3.14 即可。"
+            };
+        }
+        else if (t === "calc_arc") {
+            // Q3, Q4, Q8 Logic
+            const r = this.getRandomNum();
+            // Use fractions instead of degrees
+            const fractions = [
+                { txt: "1/2", val: 0.5 }, { txt: "1/3", val: 1/3 },
+                { txt: "1/4", val: 0.25 }, { txt: "1/6", val: 1/6 }
+            ];
+            const f = fractions[Math.floor(Math.random()*fractions.length)];
+            
+            return {
+                text: `算出半徑 ${r}公分，${f.txt}圓的弧長`,
+                type: 'sector', r: r, frac: f.val,
+                step1: { q: "這是幾分之幾圓？", opts: [`${f.txt} 圓`, "1 圓"], correct: 0 },
+                step2: { 
+                    q: "弧長算式：", 
+                    opts: [`${r*2}×3.14×${f.txt}`, `${r}×3.14×${f.txt}`], 
+                    correct: 0 
+                },
+                hint: "記得先算直徑(半徑x2)的圓周長，再乘比例。"
+            };
+        }
+        else if (t === "calc_peri") {
+             // Q5, Q7, Q9 Logic
+             const r = this.getRandomNum();
+             const fractions = [ { txt: "1/2", val: 0.5 }, { txt: "1/4", val: 0.25 } ];
+             const f = fractions[Math.floor(Math.random()*fractions.length)];
+             const arc = (r * 2 * 3.14 * f.val).toFixed(2);
+             
+             return {
+                text: `算出半徑 ${r}公分，${f.txt} 圓的「扇形周長」`,
+                type: 'sector', r: r, frac: f.val,
+                step1: { q: "扇形周長包含什麼？", opts: ["只有弧長", "弧長 + 2條半徑"], correct: 1 },
+                step2: { 
+                    q: "正確算式：", 
+                    opts: [`${arc} + ${r}`, `${arc} + ${r*2}`], 
+                    correct: 1 
+                },
+                hint: `弧長約${arc}，還要加上兩條半徑(直徑${r*2})喔！`
+            };
+        }
+    }
+
+    renderQuestion() {
+        const q = this.currentQ;
+        document.getElementById('q-text').innerText = q.text;
+        document.getElementById('hint-box').classList.add('hidden');
+        document.getElementById('hint-box').innerText = q.hint;
+        document.getElementById('next-q-btn').classList.add('hidden');
+        
+        document.getElementById('step1-title').innerText = q.step1.q;
+        this.renderOptions('step1-options', q.step1.opts, (idx) => this.checkStep1(idx));
+        document.getElementById('step2-block').classList.add('hidden');
+    }
+
+    renderOptions(id, opts, cb) {
+        const el = document.getElementById(id);
+        el.innerHTML = '';
+        opts.forEach((txt, idx) => {
+            const btn = document.createElement('div');
+            btn.className = 'choice-btn';
+            btn.innerHTML = `<span>□ ${txt}</span>`;
+            btn.onclick = () => cb(idx);
+            el.appendChild(btn);
+        });
+    }
+
+    checkStep1(idx) {
+        const q = this.currentQ;
+        const btns = document.getElementById('step1-options').children;
+        for(let b of btns) b.style.pointerEvents = 'none'; 
+
+        if(idx === q.step1.correct) {
+            btns[idx].classList.add('correct');
+            btns[idx].innerHTML = `<span>☑ ${q.step1.opts[idx]}</span>`;
+            this.app.act5.speak("答對了");
+            
+            if(q.step2) {
+                setTimeout(() => {
+                    document.getElementById('step2-block').classList.remove('hidden');
+                    document.getElementById('step2-title').innerText = q.step2.q;
+                    this.renderOptions('step2-options', q.step2.opts, (i) => this.checkStep2(i));
+                }, 800);
+            } else {
+                this.finishQuestion();
+            }
+        } else {
+            btns[idx].classList.add('wrong');
+            btns[idx].innerHTML = `<span>☒ ${q.step1.opts[idx]}</span>`;
+            this.app.act5.speak("再試試看");
+            setTimeout(() => {
+                for(let b of btns) b.style.pointerEvents = 'auto';
+                btns[idx].classList.remove('wrong');
+                btns[idx].innerHTML = `<span>□ ${q.step1.opts[idx]}</span>`;
+            }, 1000);
+        }
+    }
+
+    checkStep2(idx) {
+        const q = this.currentQ;
+        const btns = document.getElementById('step2-options').children;
+        for(let b of btns) b.style.pointerEvents = 'none';
+
+        if(idx === q.step2.correct) {
+            btns[idx].classList.add('correct');
+            btns[idx].innerHTML = `<span>☑ ${q.step2.opts[idx]}</span>`;
+            this.app.act5.speak("太棒了");
+            this.finishQuestion();
+        } else {
+            btns[idx].classList.add('wrong');
+            btns[idx].innerHTML = `<span>☒ ${q.step2.opts[idx]}</span>`;
+            this.app.act5.speak("公式選錯囉");
+            setTimeout(() => {
+                for(let b of btns) b.style.pointerEvents = 'auto';
+                btns[idx].classList.remove('wrong');
+                btns[idx].innerHTML = `<span>□ ${q.step2.opts[idx]}</span>`;
+            }, 1000);
+        }
+    }
+
+    finishQuestion() {
+        this.score += 10;
+        this.app.updateScore(this.score);
+        setTimeout(() => {
+            document.getElementById('next-q-btn').classList.remove('hidden');
+        }, 500);
+    }
+
+    toggleHint() { document.getElementById('hint-box').classList.toggle('hidden'); }
+    speakQ() { this.speak(this.currentQ.text); }
+    speak(txt) {
+        if('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(txt);
+            u.lang = 'zh-TW';
+            window.speechSynthesis.speak(u);
+        }
+    }
+    updateScore() { document.getElementById('score-display').innerText = `總分: ${this.score}`; }
+
+    draw(ctx) {
+        if(document.getElementById('quiz-game-screen').classList.contains('hidden')) return;
+        const q = this.currentQ;
+        if(!q || !q.type || q.type === 'tf') return;
+
+        const cx = this.app.width / 2;
+        const cy = this.app.height * 0.35;
+        const scale = 6; 
+        ctx.lineWidth = 3;
+
+        if (q.type === 'circle') {
+            const r = q.r * scale;
+            ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); 
+            ctx.strokeStyle="#333"; ctx.stroke(); ctx.fillStyle="#fff"; ctx.fill();
+            
+            ctx.beginPath();
+            if(q.showD) {
+                ctx.setLineDash([5,5]); ctx.moveTo(cx-r, cy); ctx.lineTo(cx+r, cy); ctx.stroke(); ctx.setLineDash([]);
+                ctx.fillStyle="#000"; ctx.font="16px Arial"; ctx.textAlign="center"; ctx.fillText(`d=${q.d}`, cx, cy-10);
+            } else {
+                ctx.moveTo(cx, cy); ctx.lineTo(cx+r, cy); ctx.stroke();
+                ctx.fillStyle="#000"; ctx.font="16px Arial"; ctx.textAlign="center"; ctx.fillText(`r=${q.r}`, cx+r/2, cy-10);
+            }
+            ctx.beginPath(); ctx.arc(cx,cy,3,0,Math.PI*2); ctx.fill();
+        } else if (q.type === 'sector') {
+            const r = q.r * scale * 0.8;
+            const ang = Math.PI*2*q.frac;
+            ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,0,-ang,true); ctx.closePath();
+            ctx.strokeStyle="#333"; ctx.stroke(); ctx.fillStyle="#e0f2fe"; ctx.fill();
+            ctx.fillStyle="#000"; ctx.fillText(`r=${q.r}`, cx+20, cy+20);
+        }
+    }
+}
+
+const app = new App();
+app.updateScore = (s) => { document.getElementById('score-display').innerText = `得分: ${s}`; }
+</script>
+</body>
+</html>
